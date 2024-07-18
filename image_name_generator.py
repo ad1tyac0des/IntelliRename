@@ -1,5 +1,3 @@
-# File: image_name_generator.py
-
 import os
 from dotenv import load_dotenv
 import requests
