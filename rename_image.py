@@ -5,6 +5,7 @@ import uuid
 import re
 from pillow_avif import AvifImagePlugin  # This import enables AVIF support
 from colorama import init, Fore, Back, Style
+import io
 
 # Initialize colorama
 init(autoreset=True)
@@ -59,17 +60,56 @@ def sanitize_filename(filename):
     # Ensure the filename doesn't start or end with a space or period
     return sanitized.strip('. ')
 
+def create_compressed_copy(image_path, max_size=900*1024):
+    with Image.open(image_path) as img:
+        # Start with original size
+        width, height = img.size
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='JPEG', quality=95)
+        img_byte_arr = img_byte_arr.getvalue()
+
+        # If image is already small enough, return the original path
+        if len(img_byte_arr) <= max_size:
+            return image_path
+
+        # If not, start compressing
+        scale = 1.0
+        quality = 95
+        while len(img_byte_arr) > max_size:
+            if quality > 30:
+                quality -= 5
+            else:
+                scale *= 0.9
+            new_size = (int(width * scale), int(height * scale))
+            img_resized = img.resize(new_size, Image.LANCZOS)
+            img_byte_arr = io.BytesIO()
+            img_resized.save(img_byte_arr, format='JPEG', quality=quality)
+            img_byte_arr = img_byte_arr.getvalue()
+
+        # Save compressed image to a temporary file
+        temp_path = f"{image_path}_temp.jpg"
+        with open(temp_path, 'wb') as f:
+            f.write(img_byte_arr)
+        print(f"  Created compressed copy: {len(img_byte_arr) / 1024:.2f}KB")
+        return temp_path
+
 def generate_valid_name(image_path, max_attempts=5):
+    original_path = image_path
     for _ in range(max_attempts):
         try:
-            new_name = image_name_generator.generate_image_name(image_path)
+            compressed_path = create_compressed_copy(image_path)
+            new_name = image_name_generator.generate_image_name(compressed_path)
             sanitized_name = sanitize_filename(new_name)
             if sanitized_name:
+                if compressed_path != original_path:
+                    os.remove(compressed_path)
                 return sanitized_name
         except Exception as e:
-            print(f"   Invalid name: {new_name}")
-            print(f"   Reason: {str(e)}")
+            print(f"   Error generating name: {str(e)}")
             print("   Retrying...")
+        finally:
+            if compressed_path != original_path and os.path.exists(compressed_path):
+                os.remove(compressed_path)
     return None
 
 def rename_images(folder_path):
@@ -143,6 +183,6 @@ def rename_images(folder_path):
                 print(f"  Removed temporary converted file '{converted_file}'")
 
 if __name__ == "__main__":
-    folder_path = "..\\Images" # Path to the folder containing the images you want to rename
+    folder_path = input("Enter Path to the folder containing the images: ")
     rename_images(folder_path)
     print_header(f"{Fore.GREEN}Image Renaming Process Completed.")
