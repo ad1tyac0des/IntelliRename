@@ -143,6 +143,6 @@ def rename_images(folder_path):
                 print(f"  Removed temporary converted file '{converted_file}'")
 
 if __name__ == "__main__":
-    folder_path = "..\\Images"
+    folder_path = "..\\Images" # Path to the folder containing the images you want to rename
     rename_images(folder_path)
     print_header(f"{Fore.GREEN}Image Renaming Process Completed.")
