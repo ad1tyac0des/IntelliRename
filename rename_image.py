@@ -3,7 +3,7 @@ import image_name_generator
 from PIL import Image
 import uuid
 import re
-from pillow_avif import AvifImagePlugin  # This import enables AVIF support
+from pillow_avif import AvifImagePlugin
 from colorama import init, Fore, Back, Style
 import io
 
@@ -62,6 +62,9 @@ def sanitize_filename(filename):
 
 def create_compressed_copy(image_path, max_size=900*1024):
     with Image.open(image_path) as img:
+        # Convert to RGB mode
+        img = img.convert('RGB')
+        
         # Start with original size
         width, height = img.size
         img_byte_arr = io.BytesIO()
@@ -95,6 +98,7 @@ def create_compressed_copy(image_path, max_size=900*1024):
 
 def generate_valid_name(image_path, max_attempts=5):
     original_path = image_path
+    compressed_path = None
     for _ in range(max_attempts):
         try:
             compressed_path = create_compressed_copy(image_path)
@@ -108,7 +112,7 @@ def generate_valid_name(image_path, max_attempts=5):
             print(f"   Error generating name: {str(e)}")
             print("   Retrying...")
         finally:
-            if compressed_path != original_path and os.path.exists(compressed_path):
+            if compressed_path and compressed_path != original_path and os.path.exists(compressed_path):
                 os.remove(compressed_path)
     return None
 
