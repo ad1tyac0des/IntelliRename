@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 if [ ! -f .env ] || ! grep -q "NVIDIA_API_KEY" .env; then
     echo ""
