@@ -40,6 +40,9 @@ IntelliRename is an intelligent image renaming tool that uses AI to analyze imag
    - Prompt for your NVIDIA API key (if not already set)
    - Run the main script
 
+**Obtaining your NVIDIA API Key**
+
+To get your NVIDIA API key, visit the [NVIDIA NIM](https://build.nvidia.com), sign in or create an account, and generate a new API key. 
 
 ## Requirements
 
