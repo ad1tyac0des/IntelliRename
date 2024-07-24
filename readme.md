@@ -18,8 +18,6 @@ IntelliRename is an intelligent image renaming tool that uses AI to analyze imag
 
 ## Setup and Usage
 
-### Automatic Setup
-
 1. **Clone the Repository:**
    ```sh
    git clone https://github.com/ad1tyac0des/IntelliRename
